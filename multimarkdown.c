@@ -2,17 +2,17 @@
 
 	parser.leg -> parser.c -- Parse (Multi)Markdown plain text for
 		conversion into other formats
-	
+
 	(c) 2013-2015 Fletcher T. Penney (http://fletcherpenney.net/).
 
 	Derived from peg-multimarkdown, which was forked from peg-markdown,
-	which is (c) 2008 John MacFarlane (jgm at berkeley dot edu), and 
+	which is (c) 2008 John MacFarlane (jgm at berkeley dot edu), and
 	licensed under GNU GPL or MIT.
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License or the MIT
 	license.  See LICENSE for details.
-	
+
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 	bool list_meta_keys = 0;
 	bool list_transclude_manifest = 0;
 	char *target_meta_key = FALSE;
-		
+
 	static struct option long_options[] = {
 		{"batch", no_argument, &batch_flag, 1},                              /* process each file separately */
 		{"to", required_argument, 0, 't'},                                   /* which output format to use */
@@ -75,30 +75,30 @@ int main(int argc, char **argv)
 		{"manifest", no_argument, 0, 'x'},                                   /* List all transcluded files */
 		{NULL, 0, NULL, 0}
 	};
-	
+
 	GString *inputbuf;
 	GString *manifest;
 	FILE *input;
 	FILE *output;
 	int curchar;
 	GString *filename = NULL;
-	
+
 	char *out;
-	
+
 	/* set up my data for the parser */
 	int output_format = HTML_FORMAT;	/* Default output format unless specified otherwise */
 	unsigned long extensions = 0;
 	extensions = extensions | EXT_SMART | EXT_NOTES | EXT_OBFUSCATE;
-	
+
 	/* process options */
 	while (1) {
 		int option_index = 0;
 
 		c = getopt_long (argc, argv, "vhco:bfst:me:arx", long_options, &option_index);
-		
+
 		if (c == -1)
 			break;
-		
+
 		switch (c) {
 			case 0: /* handle long_options */
 				/* printf ("option %s", long_options[option_index].name);
@@ -106,20 +106,20 @@ int main(int argc, char **argv)
 				printf (" with arg %s", optarg);
 				printf("\n"); */
 				break;
-			
+
 			case 'b':	/* batch */
 				batch_flag = 1;
 				break;
-			
+
 			case 'c':	/* compatibility */
 				compatibility_flag = 1;
 				break;
-			
+
 			case 'o':	/* output filename */
 				if (optarg)
 					filename = g_string_new(optarg);
 				break;
-			
+
 			case 'v':	/* show version */
 				printf("\nMultiMarkdown version %s\n%s\n",MMD_VERSION, MMD_COPYRIGHT);
 				return(EXIT_SUCCESS);
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
 				"NOTE: The lyx output format was created by Charles R. Cowan, and \n\tis provided as is.\n\n\n"
 				);
 				return(EXIT_SUCCESS);
-			
+
 			case 't':	/* output format */
 				if (strcmp(optarg, "text") == 0)
 					output_format = TEXT_FORMAT;
@@ -184,15 +184,15 @@ int main(int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				break;
-			
+
 			case 'f':	/* full doc */
 				extensions = extensions | EXT_COMPLETE;
 				break;
-			
+
 			case 's':	/* snippet only */
 				extensions = extensions | EXT_SNIPPET;
 				break;
-			
+
 			case 'm':	/* list metadata */
 				list_meta_keys = 1;
 				break;
@@ -200,18 +200,18 @@ int main(int argc, char **argv)
 			case 'e':	/* extract metadata */
 				target_meta_key = strdup(optarg);
 				break;
-			
+
 			case '?':	/* long handles */
 				break;
-				
+
 			case 'a':	/* Accept CriticMarkup changes */
 				extensions = extensions | EXT_CRITIC_ACCEPT;
 				break;
-			
+
 			case 'r':	/* Reject CriticMarkup changes */
 				extensions = extensions | EXT_CRITIC_REJECT;
 				break;
-			
+
 			case 'x':	/* List transcluded files */
 				list_transclude_manifest = 1;
 				break;
@@ -220,8 +220,8 @@ int main(int argc, char **argv)
 			fprintf(stderr,"Error parsing options.\n");
 			abort();
 		}
-	}	
-	
+	}
+
 	/* Compatibility mode emulates the behavior of Markdown.pl */
 	if (compatibility_flag) {
 		extensions = 0x000000;
@@ -231,13 +231,13 @@ int main(int argc, char **argv)
 	/* apply extensions from long options*/
 	if (complete_flag)
 		extensions = extensions | EXT_COMPLETE;
-	
+
 	if (snippet_flag)
 		extensions = extensions | EXT_SNIPPET;
-	
+
 	if (notes_flag)
 		extensions = extensions | EXT_NOTES;
-	
+
 	if (no_notes_flag)
 		extensions &= ~EXT_NOTES;
 
@@ -252,7 +252,7 @@ int main(int argc, char **argv)
 
 	if (no_label_flag)
 		extensions = extensions | EXT_NO_LABELS;
-	
+
 	if (obfuscate_flag)
 		extensions = extensions | EXT_OBFUSCATE;
 
@@ -261,7 +261,7 @@ int main(int argc, char **argv)
 
 	if (process_html_flag)
 		extensions = extensions | EXT_PROCESS_HTML;
-	
+
 	if (random_footnotes_flag)
 		extensions = extensions | EXT_RANDOM_FOOT;
 
@@ -271,21 +271,21 @@ int main(int argc, char **argv)
 	/* Enable HEADINGSECTION for certain formats */
 	if ((output_format == OPML_FORMAT) || (output_format == BEAMER_FORMAT) || (output_format == LYX_FORMAT))
 		extensions = extensions | EXT_HEADINGSECTION;
-	
+
 	/* fix numbering to account for options */
 	argc -= optind;
 	argv += optind;
-	
+
 	/* We expect argc and argv to still point just one below the start of remaining args */
 	argc++;
 	argv--;
-	
+
 	/* any filenames */
 	numargs = argc -1;
 
 	if (batch_flag && (numargs != 0)) {
 		/* we have multiple file names -- handle individually */
-		
+
 		for (i = 0; i < numargs; i++) {
 			inputbuf = g_string_new("");
 			manifest = g_string_new("");
@@ -299,11 +299,11 @@ int main(int argc, char **argv)
 				g_string_free(filename, true);
 				exit(EXIT_FAILURE);
 			}
-			
+
 			while ((curchar = fgetc(input)) != EOF)
 				g_string_append_c(inputbuf, curchar);
 			fclose(input);
-			
+
 			/* list metadata keys */
 			if (list_meta_keys) {
 				out = extract_metadata_keys(inputbuf->str, extensions);
@@ -315,7 +315,7 @@ int main(int argc, char **argv)
 					return(EXIT_SUCCESS);
 				}
 			}
-			
+
 			/* extract metadata */
 			if (target_meta_key) {
 				out = extract_metadata_value(inputbuf->str, extensions, target_meta_key);
@@ -326,7 +326,7 @@ int main(int argc, char **argv)
 				free(target_meta_key);
 				return(EXIT_SUCCESS);
 			}
-			
+
 			if (!(extensions & EXT_COMPATIBILITY)) {
 				temp = strdup(argv[i+1]);
 				folder = dirname(temp);
@@ -355,7 +355,7 @@ int main(int argc, char **argv)
 				out = markdown_to_string(inputbuf->str,  extensions, output_format);
 				g_string_free(inputbuf, true);
 			}
-			
+
 			/* set up for output */
 			temp = argv[i+1];	/* get current filename */
 			if (strrchr(temp,'.') != NULL) {
@@ -365,9 +365,9 @@ int main(int argc, char **argv)
 					temp[count] = '\0';
 				}
 			}
-			
+
 			filename = g_string_new(temp);
-			
+
 			if (output_format == TEXT_FORMAT) {
 				g_string_append(filename,".txt");
 			} else if (output_format == HTML_FORMAT) {
@@ -392,16 +392,16 @@ int main(int argc, char **argv)
 				/* default extension -- in this case we only have 1 */
 				g_string_append(filename,".txt");
 			}
-			
+
 			if (!(output = fopen(filename->str, "w"))) {
 				perror(filename->str);
 			} else {
 				fprintf(output, "%s\n",out);
 				fclose(output);
 			}
-			
+
 			g_string_free(filename,true);
-			
+
 			if (out != NULL)
 				free(out);
 		}
@@ -434,13 +434,13 @@ int main(int argc, char **argv)
 					free(temp);
 					exit(EXIT_FAILURE);
 				}
-				
+
 				while ((curchar = fgetc(input)) != EOF)
 					g_string_append_c(inputbuf, curchar);
 				fclose(input);
 			}
 		}
-		
+
 		if (!(extensions & EXT_COMPATIBILITY)) {
 			prepend_mmd_header(inputbuf);
 			append_mmd_footer(inputbuf);
@@ -482,7 +482,7 @@ int main(int argc, char **argv)
 			g_string_free(manifest, true);
 			return(EXIT_SUCCESS);
 		} else {
-			g_string_free(manifest, true);			
+			g_string_free(manifest, true);
 		}
 
 		if (output_format == ORIGINAL_FORMAT) {
@@ -493,7 +493,7 @@ int main(int argc, char **argv)
 			out = markdown_to_string(inputbuf->str,  extensions, output_format);
 			g_string_free(inputbuf, true);
 		}
-		
+
 		/* did we specify an output filename; "-" equals stdout */
 		if ((filename == NULL) || (strcmp(filename->str, "-") == 0)) {
 			output = stdout;
@@ -504,15 +504,15 @@ int main(int argc, char **argv)
 			g_string_free(filename, true);
 			return 1;
 		}
-		
+
 		fprintf(output, "%s\n",out);
 		fclose(output);
-		
+
 		g_string_free(filename, true);
-		
+
 		if (out != NULL)
 			free(out);
 	}
-	
+
 	return(EXIT_SUCCESS);
 }
