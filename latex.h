@@ -8,6 +8,7 @@
 void print_latex_node_tree(GString *out, node *list, scratch_pad *scratch);
 void print_latex_node(GString *out, node *n, scratch_pad *scratch);
 void print_latex_localized_typography(GString *out, int character, scratch_pad *scratch);
+void print_latex_unescaped_string(GString *out, char *str, scratch_pad *scratch);
 void print_latex_string(GString *out, char *str, scratch_pad *scratch);
 void print_latex_url(GString *out, char *str, scratch_pad *scratch);
 void print_latex_endnotes(GString *out, scratch_pad *scratch);

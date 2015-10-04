@@ -44,6 +44,7 @@ int main(int argc, char **argv)
 	static int no_obfuscate_flag = 0;
 	static int process_html_flag = 0;
 	static int random_footnotes_flag = 0;
+	static int latex_passthru_flag = 0;
 	bool list_meta_keys = 0;
 	bool list_transclude_manifest = 0;
 	char *target_meta_key = FALSE;
@@ -73,6 +74,7 @@ int main(int argc, char **argv)
 		{"version", no_argument, 0, 'v'},                                    /* display version information */
 		{"help", no_argument, 0, 'h'},                                       /* display usage information */
 		{"manifest", no_argument, 0, 'x'},                                   /* List all transcluded files */
+		{"passthru", no_argument, 0, 'p'},                                   /* Enable LaTeX passthru */
 		{NULL, 0, NULL, 0}
 	};
 
@@ -94,7 +96,7 @@ int main(int argc, char **argv)
 	while (1) {
 		int option_index = 0;
 
-		c = getopt_long (argc, argv, "vhco:bfst:me:arx", long_options, &option_index);
+		c = getopt_long (argc, argv, "vhco:bfst:me:arxp", long_options, &option_index);
 
 		if (c == -1)
 			break;
@@ -151,6 +153,7 @@ int main(int argc, char **argv)
 				"    --labels, --nolabels   Disable id attributes for headers\n"
 				"    --mask, --nomask       Mask email addresses in HTML\n"
 				"    --escaped-line-breaks  Enable escaped line breaks\n"
+				"    -p, --passthru         Enable latex passthru\n"
 
 				"\nAvailable FORMATs: html(default), latex, beamer, memoir, odf, opml, lyx, mmd\n\n"
 				"NOTE: The lyx output format was created by Charles R. Cowan, and \n\tis provided as is.\n\n\n"
@@ -216,6 +219,10 @@ int main(int argc, char **argv)
 				list_transclude_manifest = 1;
 				break;
 
+			case 'p':	/* enable LaTeX passthru */
+				latex_passthru_flag = 1;
+				break;
+
 			default:
 			fprintf(stderr,"Error parsing options.\n");
 			abort();
@@ -271,6 +278,9 @@ int main(int argc, char **argv)
 	/* Enable HEADINGSECTION for certain formats */
 	if ((output_format == OPML_FORMAT) || (output_format == BEAMER_FORMAT) || (output_format == LYX_FORMAT))
 		extensions = extensions | EXT_HEADINGSECTION;
+
+	if ((output_format == LATEX_FORMAT) && latex_passthru_flag)
+		extensions = extensions | EXT_LATEX_PASSTHRU;
 
 	/* fix numbering to account for options */
 	argc -= optind;

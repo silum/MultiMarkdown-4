@@ -94,7 +94,10 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			print_latex_node_tree(out,n->children,scratch);
 			break;
 		case STR:
-			print_latex_string(out,n->str, scratch);
+			if (scratch->extensions & EXT_LATEX_PASSTHRU)
+				print_latex_unescaped_string(out, n->str, scratch);
+			else
+				print_latex_string(out,n->str, scratch);
 			break;
 		case ABBREVIATION:
 			/* We combine the short and full names, since stripping non-ascii characters may result
@@ -1118,6 +1121,16 @@ void print_latex_localized_typography(GString *out, int character, scratch_pad *
 			g_string_append_printf(out,"{\\ldots}");
 			break;
 			default:;
+	}
+}
+
+/* print_latex_unescaped_string - print string, not escaping for LaTeX */
+void print_latex_unescaped_string(GString *out, char *str, scratch_pad *scratch) {
+	if (str == NULL)
+		return;
+	while (*str != '\0') {
+		g_string_append_c(out, *str);
+		str++;
 	}
 }
 
